@@ -7,17 +7,18 @@ This macro will scan all the expressions in all the open documents then output, 
 expressions that contain the alias or if the alias is not defined then the value in the spreadsheet 
 selected cell(s).  This is a string match, not a wildcard match and not a regular expression.
 
-The primary use case is to locate usages of spreadsheet aliases where the user has the alias name
-in a cell adjacent to the alias.  Aliases without any references may safely be removed if they are
-not used internally in the spreadsheet.
+The primary use case is to locate usages of spreadsheet aliases where the user has one or more cells selected
+that contain either the alias or a string containing the alias name.  Aliases without any references may 
+safely be removed if they are not used internally in the spreadsheet.
 
 The secondary use case is for the user to put an arbitrary string in a cell then search the open document's
 expressions for tokens that start with the cell's value.
 
-For example, say you have your spreadsheet in the "globals" document (file).  Now say you set your spreadsheet 
-label to "params".  This allows you to reference alias values as either "globals#<<params>>.aliasName" or 
-shorter as "<<params>>.aliasName".  To use alias name completion you must use the former but decide to use the 
-later for brevity.  To find all of the global usages, enter "globals" is a cell then run this macro on the cell.
+For example, say you have your spreadsheet in the "globals" document (file) and you link to the spreadsheet
+from other documents.  Now say you set your spreadsheet label to "params".  This allows you to reference alias 
+values as either "globals#<<params>>.aliasName" or shorter as "<<params>>.aliasName".  To use alias name 
+completion you must use the former but decide to use the later for brevity.  To find all of the global usages, 
+enter the unique start of the alias value in a cell, "globals" in this example, then run this macro on the cell.
 
 This macro reuses the spreadsheet handling code from EasyAlias macro by TheMarkster and rosta:
 ref: "https://wiki.freecadweb.org/Macro_EasyAlias"
@@ -51,7 +52,6 @@ of cells is selected.
 
 Tested on: 
 
-```
 OS: Ubuntu 23.10 (KDE/plasmawayland)
 Word size of FreeCAD: 64-bit
 Version: 0.22.0dev.35485 (Git) AppImage
@@ -67,7 +67,6 @@ Installed mods:
   * fasteners 0.4.58
   * lattice2 1.0.0
   * Curves 0.6.12
-```
 
 
 __title__ = "FindAliasReferences"
