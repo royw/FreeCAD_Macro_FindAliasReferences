@@ -1,6 +1,9 @@
+from typing import Generator
+
 import FreeCAD
 import re
 from PySide import QtGui
+
 
 """
 This macro will scan all the expressions in all the open documents then output, to the Report View, all 
@@ -14,11 +17,12 @@ safely be removed if they are not used internally in the spreadsheet.
 The secondary use case is for the user to put an arbitrary string in a cell then search the open document's
 expressions for tokens that start with the cell's value.
 
-For example, say you have your spreadsheet in the "globals" document (file) and you link to the spreadsheet
-from other documents.  Now say you set your spreadsheet label to "params".  This allows you to reference alias 
-values as either "globals#<<params>>.aliasName" or shorter as "<<params>>.aliasName".  To use alias name 
-completion you must use the former but decide to use the later for brevity.  To find all of the global usages, 
-enter the unique start of the alias value in a cell, "globals" in this example, then run this macro on the cell.
+For example, say you have your spreadsheet in the globals.FCStd file and you link to the spreadsheet from
+other documents.  Now say you set your spreadsheet label to "params".  This allows you to reference alias
+values as either "globals#<<params>>.aliasName" or shorter as "<<params>>.aliasName".  To use alias name
+completion you must use the former, but when done you want to change these alias references to the latter
+format for brevity.  To find them, enter the unique start of the alias value in a cell, "globals" in this
+example, then run this macro on the cell.
 
 This macro reuses the spreadsheet handling code from EasyAlias macro by TheMarkster and rosta:
 ref: "https://wiki.freecadweb.org/Macro_EasyAlias"
@@ -71,11 +75,12 @@ Installed mods:
 
 __title__ = "FindAliasReferences"
 __author__ = "RoyW"
-__date__ = "2024.01.05" #year.month.date
+__date__ = "2024.04.09" #year.month.date
 __version__ = __date__
 __comment__ = "Find references to spreadsheet aliases in open documents"
 __url__ = "https://wiki.freecadweb.org/Macro_FindAliasReferences"
 __Wiki__ = "https://wiki.freecadweb.org/Macro_FindAliasReferences"
+__License__ = "MIT"
 
 """
 
@@ -169,7 +174,7 @@ def rowcol_to_a1(row: int, column: int):
     return label
 
 
-def text_to_alias(text: str):
+def text_to_alias(text: str) -> str:
     # support for custom aliases between parentheses
     match = CUSTOM_ALIAS_RE.match(text)
     if match:
@@ -180,7 +185,7 @@ def text_to_alias(text: str):
     return text
 
 
-def _object_description(label: str, name: str):
+def _object_description(label: str, name: str) -> str:
     """
     Helper function to format label+name.
 
@@ -202,7 +207,7 @@ def _object_description(label: str, name: str):
     return ""
 
 
-def _location_string(doc, obj):
+def _location_string(doc, obj) -> str:
     """
     The location of the object containing expressions may be either just the document for containerless objects
     or the object's container combined with the object itself.
@@ -220,15 +225,18 @@ def _location_string(doc, obj):
     :param obj: object instance.
     :return: location string.
     """
-    parent = obj.getParent()
     location = f"{doc.Name}"
-    if parent:
-        # location typically contains "DocName => MyContainer (Body001)"
-        location = f"{doc.Name} => {_object_description(parent.Label, parent.Name)}"
+    try:
+        parent = obj.getParent()  # note FreeCAD-RealThunder has removed getParent()
+        if parent:
+            # location typically contains "DocName => MyContainer (Body001)"
+            location = f"{doc.Name} => {_object_description(parent.Label, parent.Name)}"
+    except:
+        pass
     return location or ""
 
 
-def _contains_alias(spreadsheet, substring, expression):
+def _contains_alias(spreadsheet, substring: str, expression: str) -> bool:
     """
     Checks if the expression contains a reference to the spreadsheet's substring.
 
@@ -269,7 +277,7 @@ def _contains_alias(spreadsheet, substring, expression):
     return False
 
 
-def _finder(substring, spreadsheet):
+def _finder(substring: str, spreadsheet) -> Generator[str, None, None]:
     """
     Helper that performs the search and returns a list of formatted output lines.
 
@@ -301,7 +309,7 @@ def _finder(substring, spreadsheet):
                 print(ex)
 
 
-def find_alias_references(substring, spreadsheet):
+def find_alias_references(substring: str, spreadsheet) -> str:
     """
     Search expressions in all the open documents for the given substring.
 
@@ -312,7 +320,7 @@ def find_alias_references(substring, spreadsheet):
     return '\n'.join(_finder(substring, spreadsheet))
 
 
-def main():
+def main() -> None:
     """
     For each of the selected cells in the spreadsheet, find and print to the report view all the expressions
     that contain the alias, or if not defined, then the value in the selected cell.
@@ -344,3 +352,4 @@ def main():
 
 
 main()
+
